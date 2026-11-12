@@ -1,0 +1,30 @@
+diff --git a/app.py b/app.py
+index b95e68a..d30269b 100644
+--- a/app.py
++++ b/app.py
+@@ -35,9 +35,9 @@ def index():
+ def get_user():
+     username = request.args.get('name', '')
+     cursor = db_conn.cursor()
+-    query = f"SELECT username, secret FROM users WHERE username = '{username}'"
++    query = "SELECT username, secret FROM users WHERE username = ?"
+     try:
+-        cursor.execute(query)
++        cursor.execute(query, (username,))
+         result = cursor.fetchall()
+         return f"Результат поиска для {username}: {str(result)}"
+     except Exception as e:
+@@ -49,10 +49,12 @@ def get_message():
+     message_id = request.args.get('id', '')
+     current_user = "user1"
+     cursor = db_conn.cursor()
+-    cursor.execute(f"SELECT owner, text FROM messages WHERE id = {message_id}")
++    cursor.execute("SELECT owner, text FROM messages WHERE id = ?", (message_id,))
+     result = cursor.fetchone()
+     if result:
+         owner, text = result
++        if owner != current_user:
++            return "Ошибка доступа: У вас нет прав на просмотр этого сообщения!", 403
+         return f"Сообщение #{message_id} (Владелец: {owner}): {text}"
+     return "Сообщение не найдено."
+ 
